@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_project/screens/home_screen.dart'; 
 import 'package:flutter_project/screens/bottom_navigation.dart';
 
 class LoginScreen extends StatefulWidget {

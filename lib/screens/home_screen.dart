@@ -1,4 +1,5 @@
-import 'package:flutter/material.dart'; 
+import 'package:flutter/material.dart';
+import 'package:flutter_project/screens/add_patient_screen.dart'; 
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,7 +26,14 @@ class _HomeScreenState extends State<HomeScreen> {
             IconButton(
              icon: const Icon(Icons.person_add_alt_1, color: Colors.white, size: 28),
             tooltip: 'Add New Patient',
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AddPatientScreen(),
+                ),
+              );
+            },
             ),
             const SizedBox(width: 10),
           ],
@@ -33,7 +41,6 @@ class _HomeScreenState extends State<HomeScreen> {
           // 1. Material 3 SearchAnchor
           body: SafeArea(
         child: SingleChildScrollView(
-          // This Padding ensures there is space on all sides, including the top!
           padding: const EdgeInsets.all(20.0), 
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,13 +67,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 },
                 suggestionsBuilder: (BuildContext context, SearchController controller) {
-                  // Returning an empty list for now. 
-                  // You will plug your web service API data in here later!
+                 
                   return []; 
                 },
               ),
               
-              // This creates the space between the Search bar and the Attention header
               const SizedBox(height: 35),
 
               // 2. Attention Needed Header

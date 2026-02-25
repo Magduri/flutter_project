@@ -65,8 +65,9 @@ class _PatientsListScreenState extends State<PatientsListScreen> {
                 final String lastName = patient['last_name'] ?? patient['lastName'] ?? '';
                 final String fullName = '$firstName $lastName'.trim();
                 final String gender = patient['gender'] ?? 'Unknown';
-                
-            
+                final String age = patient['age'] != null ? patient['age'].toString() : 'Unknown';
+                final String phone = patient['phone'] ?? 'Unknown';
+                final String email = patient['email'] ?? 'Unknown';
                 final String status = patient['status'] ?? 'Stable'; 
 
                 return Card(
@@ -100,6 +101,9 @@ class _PatientsListScreenState extends State<PatientsListScreen> {
                         'name': fullName,
                         'gender': gender,
                         'status': status,
+                        'age': age,
+                        'phone': phone,
+                        'email': email,
                       };
                       Navigator.push(
                         context,

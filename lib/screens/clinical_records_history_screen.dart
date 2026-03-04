@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+// import 'dart:convert';
+import '../services/network_manager.dart';
 import 'add_clinical_record_screen.dart';
 
 class ClinicalRecordsHistoryScreen extends StatefulWidget {
@@ -30,17 +30,11 @@ class _ClinicalRecordsHistoryScreenState extends State<ClinicalRecordsHistoryScr
   // Fetch the records 
   Future<void> fetchRecords() async {
     try {
-      final url = 'http://127.0.0.1:3000/clinicaldata/patients/${widget.patientId}';
-      final response = await http.get(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        setState(() {
-          _records = json.decode(response.body);
-          _isLoading = false;
-        });
-      } else {
-        setState(() => _isLoading = false);
-      }
+      final data = await NetworkManager.instance.getPatientRecords(widget.patientId);
+      setState(() {
+        _records = data;
+        _isLoading = false;
+      });
     } catch (e) {
       print("Error: $e");
       setState(() => _isLoading = false);

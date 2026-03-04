@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+//import 'dart:convert';
+import '../services/network_manager.dart';
 
 class AddClinicalRecordScreen extends StatefulWidget {
   final String patientId;
@@ -84,25 +84,18 @@ class _AddClinicalRecordScreenState extends State<AddClinicalRecordScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final url = 'http://127.0.0.1:3000/clinicaldata';
-      
       final Map<String, dynamic> requestBody = {
         "patientId": widget.patientId,
         "type": _selectedType,
         "value": finalValue, 
       };
 
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {"Content-Type": "application/json"},
-        body: json.encode(requestBody),
-      );
+      final response = await NetworkManager.instance.addClinicalRecord(requestBody);
 
      
       //CRITICAL ALERT
-      if (response.statusCode == 201) {
-        final responseData = json.decode(response.body);
-        final bool isCritical = responseData['flagged'] == true;
+      if (response['statusCode'] == 201) {
+        final bool isCritical = response['flagged'] == true;
 
         if (mounted) setState(() => _isSubmitting = false);
 

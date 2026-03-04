@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:convert'; 
-import 'package:http/http.dart' as http; 
+//import 'dart:convert'; 
+import '../services/network_manager.dart';
 import 'patient_info_screen.dart';
 
 class PatientsListScreen extends StatefulWidget {
@@ -24,19 +24,14 @@ class _PatientsListScreenState extends State<PatientsListScreen> {
  
   Future<void> fetchPatients() async {
     try {
-      final response = await http.get(Uri.parse('http://127.0.0.1:3000/patients'));
-
-      if (response.statusCode == 200) {
-        setState(() {
-          _patients = json.decode(response.body);
-          _isLoading = false; 
-        });
-      } else {
-        print("Server error: ${response.statusCode}");
-        setState(() => _isLoading = false);
-      }
+      final data = await NetworkManager.instance.getPatients();
+      
+      setState(() {
+        _patients = data;
+        _isLoading = false;
+      });
     } catch (e) {
-      print("Network error: $e");
+      print("Error fetching patients: $e");
       setState(() => _isLoading = false);
     }
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 //import 'dart:convert'; 
 import '../services/network_manager.dart';
 import 'patient_info_screen.dart';
+import 'patient_search_delegate.dart';
 
 class PatientsListScreen extends StatefulWidget {
   const PatientsListScreen({super.key});
@@ -45,6 +46,17 @@ class _PatientsListScreenState extends State<PatientsListScreen> {
         title: const Text('Patient List', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFF00796B),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.search, color: Colors.white),
+            onPressed: () {
+              showSearch(
+                context: context,
+                delegate: PatientSearchDelegate(_patients),
+              );
+            },
+          ),
+        ],
       ),
       
       body: _isLoading 

@@ -68,11 +68,11 @@ class _PatientsListScreenState extends State<PatientsListScreen> {
                 final patient = _patients[index];
 
               
-                final String firstName = patient['first_name'] ?? patient['firstName'] ?? 'Patient';
-                final String lastName = patient['last_name'] ?? patient['lastName'] ?? '';
+                final String firstName = patient['firstName'] ?? 'Patient';
+                final String lastName = patient['lastName'] ?? '';
                 final String fullName = '$firstName $lastName'.trim();
                 final String gender = patient['gender'] ?? 'Unknown';
-                final String age = patient['age'] != null ? patient['age'].toString() : 'Unknown';
+                final String dob = patient['dob'] ?? 'Unknown';
                 final String phone = patient['phone'] ?? 'Unknown';
                 final String email = patient['email'] ?? 'Unknown';
                 final String status = patient['status'] ?? 'Stable'; 
@@ -108,7 +108,7 @@ class _PatientsListScreenState extends State<PatientsListScreen> {
                         'name': fullName,
                         'gender': gender,
                         'status': status,
-                        'age': age,
+                        'dob': dob,
                         'phone': phone,
                         'email': email,
                       };

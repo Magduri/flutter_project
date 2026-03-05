@@ -3,12 +3,25 @@ import 'clinical_records_history_screen.dart';
 
 class PatientInfoScreen extends StatelessWidget {
   
-  final Map<String, String> patientData;
+  final Map<String, dynamic> patientData;
 
   const PatientInfoScreen({super.key, required this.patientData});
 
-  @override
+ @override
   Widget build(BuildContext context) {
+    
+    final String firstName = patientData['firstName']?.toString() ?? '';
+    final String lastName = patientData['lastName']?.toString() ?? '';
+    
+    String displayName = patientData['name']?.toString() ?? '';
+    
+    if (displayName.isEmpty) {
+      displayName = "$firstName $lastName".trim();
+    }
+    
+    // Safety check for the Avatar initial
+    final String initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : '?';
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
       appBar: AppBar(
@@ -28,19 +41,15 @@ class PatientInfoScreen extends StatelessWidget {
                 radius: 50,
                 backgroundColor: const Color(0xFFE0F2F1),
                 child: Text(
-                  patientData['name']![0], 
+                  initial, 
                   style: const TextStyle(fontSize: 40, color: Color(0xFF00796B), fontWeight: FontWeight.bold),
                 ),
               ),
             ),
             const SizedBox(height: 16),
             Text(
-              patientData['name']!,
+              displayName.isEmpty ? 'Unknown Patient' : displayName,
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Color(0xFF333333)),
-            ),
-            Text(
-              'Status: ${patientData['status']}',
-              style: TextStyle(fontSize: 16, color: Colors.grey.shade600, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 30),
 
@@ -58,22 +67,22 @@ class PatientInfoScreen extends StatelessWidget {
                     ListTile(
                       leading: const Icon(Icons.person, color: Color(0xFF00796B)),
                       title: const Text('Gender'),
-                      subtitle: Text(patientData['gender']!),
+                      subtitle: Text(patientData['gender'] ?? 'N/A'),
                     ),
                     ListTile(
                       leading: const Icon(Icons.calendar_today, color: Color(0xFF00796B)),
-                      title: const Text('Age'),
-                      subtitle: Text(patientData['age']!),
+                      title: const Text('Date of Birth'),
+                      subtitle: Text(patientData['dob'] ?? 'N/A'),
                     ),
                     ListTile(
                       leading: const Icon(Icons.phone, color: Color(0xFF00796B)),
                       title: const Text('Phone'),
-                      subtitle: Text(patientData['phone']!),
+                      subtitle: Text(patientData['phone'] ?? 'N/A'),
                     ),
                     ListTile(
                       leading: const Icon(Icons.email, color: Color(0xFF00796B)),
                       title: const Text('Email'),
-                      subtitle: Text(patientData['email']!),
+                      subtitle: Text(patientData['email'] ?? 'N/A'),
                     ),
                   ],
                 ),
@@ -90,19 +99,26 @@ class PatientInfoScreen extends StatelessWidget {
                   backgroundColor: const Color(0xFF00796B),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
-                //icon: const Icon(Icons.history_edu, color: Colors.white), 
+                icon: const Icon(Icons.history_edu, color: Colors.white), 
                 label: const Text('View Clinical Records', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-               onPressed: () {
-               Navigator.push(
-                 context,
-                 MaterialPageRoute(
-                   builder: (context) => ClinicalRecordsHistoryScreen(
-                     patientId: patientData['_id']!, 
-                     patientName: patientData['name']!,
-                   ),
-                 ),
-               );
-             },
+                onPressed: () {
+                 final id = patientData['_id']?.toString();
+                 if (id != null) {
+                   Navigator.push(
+                     context,
+                     MaterialPageRoute(
+                       builder: (context) => ClinicalRecordsHistoryScreen(
+                         patientId: id, 
+                         patientName: displayName,
+                       ),
+                     ),
+                   );
+                 } else {
+                   ScaffoldMessenger.of(context).showSnackBar(
+                     const SnackBar(content: Text("Error: Patient ID is missing"))
+                   );
+                 }
+               },
               ),
             ),
           ],

@@ -26,6 +26,16 @@ class NetworkManager {
     }
   }
 
+  Future<List<dynamic>> getCriticalPatients() async {
+    final response = await http.get(Uri.parse('$_baseUrl/patients/critical'));
+    
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load critical patients');
+    }
+  }
+
   Future<Map<String, dynamic>> addClinicalRecord(Map<String, dynamic> recordData) async {
     final response = await http.post(
       Uri.parse('$_baseUrl/clinicaldata'),

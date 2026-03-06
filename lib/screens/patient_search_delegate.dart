@@ -81,7 +81,7 @@ class PatientSearchDelegate extends SearchDelegate {
               'name': fullName,
               'gender': gender,
               'status': (patient['status'] ?? 'Stable').toString(),
-              'age': patient['age'] != null ? patient['age'].toString() : 'Unknown',
+              'dob': (patient['dob'] ?? 'Unknown').toString(),
               'phone': (patient['phone'] ?? 'Unknown').toString(),
               'email': (patient['email'] ?? 'Unknown').toString(),
             };

@@ -51,15 +51,15 @@ class _ClinicalRecordsHistoryScreenState extends State<ClinicalRecordsHistoryScr
         backgroundColor: const Color(0xFF00796B),
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Add Record',
-            onPressed: () {
-              print("Open Add Record Screen");
-            },
-          )
-        ],
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(Icons.add),
+        //     tooltip: 'Add Record',
+        //     onPressed: () {
+        //       print("Open Add Record Screen");
+        //     },
+        //   )
+        // ],
       ),
       
        
@@ -126,10 +126,10 @@ class _ClinicalRecordsHistoryScreenState extends State<ClinicalRecordsHistoryScr
           //BOTTOM BUTTON
           Container(
             padding: const EdgeInsets.all(20.0),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))]
-            ),
+            // decoration: BoxDecoration(
+            //   color: Colors.white,
+            //   boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, -5))]
+            // ),
             child: SizedBox(
               width: double.infinity,
               height: 55,
@@ -138,7 +138,7 @@ class _ClinicalRecordsHistoryScreenState extends State<ClinicalRecordsHistoryScr
                   backgroundColor: const Color(0xFF00796B),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 ),
-                icon: const Icon(Icons.add_chart, color: Colors.white),
+                //icon: const Icon(Icons.add_chart, color: Colors.white),
                 label: const Text('Add New Test Record', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                 onPressed: () async {
                
@@ -156,7 +156,8 @@ class _ClinicalRecordsHistoryScreenState extends State<ClinicalRecordsHistoryScr
              },
               ),
             ),
-          )
+          ),
+          const SizedBox(height: 20),
         ],
       ),
     );

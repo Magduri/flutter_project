@@ -88,39 +88,40 @@ class PatientInfoScreen extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 90),
 
            // --- CLINICAL RECORDS BUTTON ---
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00796B),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                icon: const Icon(Icons.history_edu, color: Colors.white), 
-                label: const Text('View Clinical Records', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-                onPressed: () {
-                 final id = patientData['_id']?.toString();
-                 if (id != null) {
-                   Navigator.push(
-                     context,
-                     MaterialPageRoute(
-                       builder: (context) => ClinicalRecordsHistoryScreen(
-                         patientId: id, 
-                         patientName: displayName,
+            
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00796B),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  icon: const Icon(Icons.history_edu, color: Colors.white), 
+                  label: const Text('View Clinical Records', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                  onPressed: () {
+                   final id = patientData['_id']?.toString();
+                   if (id != null) {
+                     Navigator.push(
+                       context,
+                       MaterialPageRoute(
+                         builder: (context) => ClinicalRecordsHistoryScreen(
+                           patientId: id, 
+                           patientName: displayName,
+                         ),
                        ),
-                     ),
-                   );
-                 } else {
-                   ScaffoldMessenger.of(context).showSnackBar(
-                     const SnackBar(content: Text("Error: Patient ID is missing"))
-                   );
-                 }
-               },
+                     );
+                   } else {
+                     ScaffoldMessenger.of(context).showSnackBar(
+                       const SnackBar(content: Text("Error: Patient ID is missing"))
+                     );
+                   }
+                 },
+                ),
               ),
-            ),
           ],
         ),
       ),

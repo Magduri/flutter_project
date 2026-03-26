@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_project/screens/login_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'add_patient_screen.dart'; 
 import '../services/network_manager.dart'; 
 import 'patient_info_screen.dart';
@@ -13,11 +15,20 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<dynamic> _criticalPatients = [];
   bool _isLoading = true;
+  String _userName = "";
 
   @override
   void initState() {
     super.initState();
+    _loadUserName();
     _fetchDashboardData();
+  }
+
+  Future<void> _loadUserName() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _userName = prefs.getString('userName') ?? '';
+    });
   }
 
   Future<void> _fetchDashboardData() async {
@@ -43,27 +54,81 @@ class _HomeScreenState extends State<HomeScreen> {
       
       appBar: AppBar(
         toolbarHeight: 100.0,
-        title: const Text(
-          'Welcome Back!',
+        centerTitle: false,
+        title: Text(
+         _userName.isNotEmpty ? "Welcome Back, \n $_userName!" : "Welcome Back!",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFF00796B),
         automaticallyImplyLeading: false,
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.person_add_alt_1, color: Colors.white, size: 28),
-            tooltip: 'Add New Patient',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AddPatientScreen(),
+          // // --- 1. ADD PATIENT BUTTON ---
+          // IconButton(
+          //   icon: const Icon(Icons.person_add_alt_1, color: Colors.white, size: 28),
+          //   tooltip: 'Add New Patient',
+          //   onPressed: () {
+          //     Navigator.push(
+          //       context,
+          //       MaterialPageRoute(
+          //         builder: (context) => const AddPatientScreen(),
+          //       ),
+          //     );
+          //   },
+          // ),
+          
+          // --- 2. AVATAR POPUP MENU (Replaces the raw Logout icon) ---
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0, left: 8.0),
+            child: PopupMenuButton<String>(
+              offset: const Offset(0, 50),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              onSelected: (value) async {
+                if (value == 'logout') {
+                  // 1. Wipe the saved memory
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.clear(); 
+
+                  // 2. Kick the user back to the Login Screen
+                  if (context.mounted) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    );
+                  }
+                }
+              },
+              // The dropdown menu items
+              itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                const PopupMenuItem<String>(
+                  value: 'profile',
+                  child: ListTile(
+                    leading: Icon(Icons.person, color: Color(0xFF00796B)),
+                    title: Text('My Profile', style: TextStyle(fontWeight: FontWeight.w600)),
+                    contentPadding: EdgeInsets.zero,
+                  ),
                 ),
-              );
-            },
+                const PopupMenuDivider(), // A nice dividing line
+                const PopupMenuItem<String>(
+                  value: 'logout',
+                  child: ListTile(
+                    leading: Icon(Icons.logout, color: Colors.red),
+                    title: Text('Log Out', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                ),
+              ],
+              // The Avatar button sitting in the header
+              child: CircleAvatar(
+                backgroundColor: Colors.white,
+                radius: 18,
+                child: Text(
+                  _userName.isNotEmpty ? _userName[0].toUpperCase() : 'U',
+                  style: const TextStyle(color: Color(0xFF00796B), fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+              ),
+            ),
           ),
-          const SizedBox(width: 10),
         ],
       ),
       
@@ -74,7 +139,6 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               
-            
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,

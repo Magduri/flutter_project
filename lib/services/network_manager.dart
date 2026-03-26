@@ -99,4 +99,18 @@ class NetworkManager {
       return {'success': false, 'message': 'Network error occurred: $e'};
     }
   }
+
+  Future<Map<String, dynamic>> addPatient(Map<String, dynamic> patientData) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/patients'),
+      headers: {"Content-Type": "application/json"},
+      body: json.encode(patientData),
+    );
+
+    if (response.statusCode == 201) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to add patient');
+    }
+  }
 }

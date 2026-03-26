@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_project/screens/login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'add_patient_screen.dart'; 
+//import 'add_patient_screen.dart'; 
 import '../services/network_manager.dart'; 
 import 'patient_info_screen.dart';
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/network_manager.dart';
 import 'patient_info_screen.dart';
 import 'patient_search_delegate.dart';
+import 'add_patient_screen.dart';
 
 class PatientsListScreen extends StatefulWidget {
   const PatientsListScreen({super.key});
@@ -59,14 +60,54 @@ class _PatientsListScreenState extends State<PatientsListScreen> {
         ],
       ),
       
-      body: _isLoading 
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF00796B)))
-          : ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: _patients.length,
-              itemBuilder: (context, index) {
-                final patient = _patients[index];
+     // --- WRAPPED IN A COLUMN ---
+      body: Column(
+        children: [
+          // 1. The Add Patient Button
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00796B),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
+                  elevation: 2,
+                ),
+                icon: const Icon(Icons.person_add, color: Colors.white),
+                label: const Text(
+                  'Add New Patient',
+                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddPatientScreen(),
+                    ),
+                  ).then((_) {
+                    setState(() => _isLoading = true);
+                    fetchPatients();
+                  });
+                },
+              ),
+            ),
+          ),
 
+          // 2. The Scrollable Patient List
+          Expanded(
+            child: _isLoading 
+              ? const Center(child: CircularProgressIndicator(color: Color(0xFF00796B)))
+              : _patients.isEmpty
+                  ? const Center(child: Text("No patients found.", style: TextStyle(fontSize: 16, color: Colors.grey)))
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0), // Adjusted padding
+                      itemCount: _patients.length,
+                      itemBuilder: (context, index) {
+                        final patient = _patients[index];
               
                 final String firstName = patient['firstName'] ?? 'Patient';
                 final String lastName = patient['lastName'] ?? '';
@@ -123,6 +164,9 @@ class _PatientsListScreenState extends State<PatientsListScreen> {
                 );
               },
             ),
+          ),
+        ],
+      )
     );
   }
 }

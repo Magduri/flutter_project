@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../services/network_manager.dart';
 import 'add_clinical_record_screen.dart';
+import 'package:intl/intl.dart';
 
 class ClinicalRecordsHistoryScreen extends StatefulWidget {
   final String patientId;
@@ -47,21 +48,22 @@ class _ClinicalRecordsHistoryScreenState extends State<ClinicalRecordsHistoryScr
   //DUAL-LINE CHART LOGIC ---
   void _showTrendChart(BuildContext context, String testType) {
     List<LineChartBarData> lineBars = [];
-    double xIndex = 0;
-    final reversedRecords = _records.reversed.toList();
+
+   
+    final allTypeRecords = _records.where((r) => r['type'] == testType).toList();
+    final filteredRecords = allTypeRecords.take(6).toList().reversed.toList();
+
 
     // 1. IF IT IS BLOOD PRESSURE (Draw Two Lines)
     if (testType.toLowerCase() == 'blood pressure') {
       List<FlSpot> sysSpots = [];
       List<FlSpot> diaSpots = [];
 
-      for (var record in reversedRecords) {
-        if (record['type'] == testType) {
-          if (record['systolic'] != null && record['diastolic'] != null) {
-            sysSpots.add(FlSpot(xIndex, (record['systolic'] as num).toDouble()));
-            diaSpots.add(FlSpot(xIndex, (record['diastolic'] as num).toDouble()));
-            xIndex++;
-          }
+      for (int i = 0; i < filteredRecords.length; i++) {
+        final record = filteredRecords[i];
+        if (record['systolic'] != null && record['diastolic'] != null) {
+          sysSpots.add(FlSpot(i.toDouble(), (record['systolic'] as num).toDouble()));
+          diaSpots.add(FlSpot(i.toDouble(), (record['diastolic'] as num).toDouble()));
         }
       }
 
@@ -85,13 +87,11 @@ class _ClinicalRecordsHistoryScreenState extends State<ClinicalRecordsHistoryScr
     // 2. IF IT IS ANYTHING ELSE (Draw One Line)
     else {
       List<FlSpot> spots = [];
-      for (var record in reversedRecords) {
-        if (record['type'] == testType) {
-          final val = double.tryParse(record['value'].toString());
-          if (val != null) {
-            spots.add(FlSpot(xIndex, val));
-            xIndex++;
-          }
+      for (int i = 0; i < filteredRecords.length; i++) {
+        final record = filteredRecords[i];
+        final val = double.tryParse(record['value'].toString());
+        if (val != null) {
+          spots.add(FlSpot(i.toDouble(), val));
         }
       }
 
@@ -148,17 +148,86 @@ class _ClinicalRecordsHistoryScreenState extends State<ClinicalRecordsHistoryScr
                 )
               else
                 SizedBox(
-                  height: 220,
+                  height: 250,
                   width: double.infinity,
                   child: LineChart(
                     LineChartData(
                       gridData: const FlGridData(show: true, drawVerticalLine: false), 
-                      titlesData: const FlTitlesData(
-                        rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                        bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      titlesData: FlTitlesData(
+                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            reservedSize: 30,
+                            getTitlesWidget: (value, meta) {
+                              final index = value.toInt();
+                              if (value == index.toDouble() && index >= 0 && index < filteredRecords.length) {
+                                final dateStr = filteredRecords[index]['measuredDateTime'] ?? '';
+                                if (dateStr.isNotEmpty) {
+                                  try {
+                                    final date = DateFormat('MMM dd').format(DateTime.parse(dateStr).toLocal());
+                                    return Padding(
+                                      padding: const EdgeInsets.only(top: 8.0),
+                                      child: Text(date, style: const TextStyle(color: Colors.grey, fontSize: 11, fontWeight: FontWeight.bold)),
+                                    );
+                                  } catch (e) {
+                                    return const Text('');
+                                  }
+                                }
+                              }
+                              return const Text('');
+                            },
+                          ),
+                        ),
                       ),
                       borderData: FlBorderData(show: false),
+
+                       lineTouchData: LineTouchData(
+                        touchTooltipData: LineTouchTooltipData(
+                          getTooltipColor: (touchedSpot) => const Color(0xFF263238),
+                          getTooltipItems: (touchedSpots) {
+                            return touchedSpots.map((LineBarSpot touchedSpot) {
+                              
+                              // 1. Get the date from our filtered records
+                              final index = touchedSpot.x.toInt();
+                              final record = filteredRecords[index];
+                              final dateStr = record['measuredDateTime'] ?? '';
+                              
+                              String formattedDate = 'Unknown Date';
+                              if (dateStr.isNotEmpty) {
+                                try {
+                                  // Formats into "Mar 27"
+                                  formattedDate = DateFormat('MMM dd').format(DateTime.parse(dateStr).toLocal());
+                                } catch (e) {
+                                  // Fallback if parsing fails
+                                }
+                              }
+
+                              // 2. Format the tooltip based on the chart type
+                              if (testType.toLowerCase() == 'blood pressure') {
+                                if (touchedSpot.barIndex == 0) {
+                                  return LineTooltipItem(
+                                    '$formattedDate\nSys: ${touchedSpot.y.toInt()}',
+                                    const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+                                  );
+                                } else {
+                                  return LineTooltipItem(
+                                    '$formattedDate\nDia: ${touchedSpot.y.toInt()}',
+                                    const TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold),
+                                  );
+                                }
+                              } else {
+                                return LineTooltipItem(
+                                  '$formattedDate\nValue: ${touchedSpot.y}',
+                                  const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                );
+                              }
+                            }).toList();
+                          },
+                        ),
+                      ),
+
                       lineBarsData: lineBars, 
                     ),
                   ),

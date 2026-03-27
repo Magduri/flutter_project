@@ -71,7 +71,10 @@ class _AddClinicalRecordScreenState extends State<AddClinicalRecordScreen> {
       if (_valueController.text.trim().isEmpty) return _showError('Please enter a test value.');
 
       int? val = int.tryParse(_valueController.text.trim());
-      if (val == null) return _showError('Value must be a valid number.');
+      if (val == null) {
+        _showError('Value must be a valid number.');
+        return;
+      } 
 
       if (_selectedType == 'Heart Rate' && (val < 20 || val > 300)) return _showError('Heart rate must be between 20 and 300 bpm.');
       if (_selectedType == 'Respiratory Rate' && (val < 5 || val > 70)) return _showError('Respiratory rate must be between 5 and 70.');
@@ -91,14 +94,26 @@ class _AddClinicalRecordScreenState extends State<AddClinicalRecordScreen> {
       };
 
       final response = await NetworkManager.instance.addClinicalRecord(requestBody);
+      if (mounted) setState(() => _isSubmitting = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                SizedBox(width: 10),
+                Text('Clinical record saved successfully!', style: TextStyle(fontWeight: FontWeight.bold)),
+              ],
+            ),
+            backgroundColor: Colors.green.shade600,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3), 
+          ),
+        );
+      }
+      final bool isCritical = response['flagged'] == true;
 
      
-      //CRITICAL ALERT
-      if (response['statusCode'] == 201) {
-        final bool isCritical = response['flagged'] == true;
-
-        if (mounted) setState(() => _isSubmitting = false);
-
         if (isCritical && mounted) {
           await showDialog(
             context: context,
@@ -134,21 +149,23 @@ class _AddClinicalRecordScreenState extends State<AddClinicalRecordScreen> {
               );
             },
           );
-        }
+        }else {
+        await Future.delayed(const Duration(seconds: 2));
+      }
 
         
-        if (mounted) Navigator.pop(context, true); 
-        
-      } else {
-        _showError('Server Error: Failed to save record.');
+    if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar(); 
+        Navigator.pop(context, true); 
       }
     } catch (e) {
-      _showError('Network error occurred. Check your connection.');
-    } finally {
-      if (mounted) setState(() => _isSubmitting = false);
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        _showError('Server Error: Failed to save record.');
+      }
     }
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(

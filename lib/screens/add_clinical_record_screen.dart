@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_project/utils/clinical_validator.dart';
 //import 'dart:convert';
 import '../services/network_manager.dart';
 
@@ -50,38 +51,47 @@ class _AddClinicalRecordScreenState extends State<AddClinicalRecordScreen> {
   Future<void> _submitRecord() async {
     String finalValue = "";
 
-   
     //VALIDATION LOGIC
     if (_selectedType == 'Blood Pressure') {
-      if (_systolicController.text.trim().isEmpty || _diastolicController.text.trim().isEmpty) {
-        return _showError('Please enter both Systolic and Diastolic values.');
+      String? errorMsg = ClinicalValidator.validateBloodPressure(_systolicController.text, _diastolicController.text);
+      if (errorMsg != null) return _showError(errorMsg);
+      
+        finalValue = "${_systolicController.text.trim()}/${_diastolicController.text.trim()}";
+      } else {
+        String? errorMsg = ClinicalValidator.validateSingleValueTest(_selectedType, _valueController.text);
+        if (errorMsg != null) return _showError(errorMsg);
+        
+        finalValue = _valueController.text.trim();
       }
+     // if (_systolicController.text.trim().isEmpty || _diastolicController.text.trim().isEmpty) {
+     //   return _showError('Please enter both Systolic and Diastolic values.');
+     // }
       
-      int? sys = int.tryParse(_systolicController.text.trim());
-      int? dia = int.tryParse(_diastolicController.text.trim());
+    //   int? sys = int.tryParse(_systolicController.text.trim());
+    //   int? dia = int.tryParse(_diastolicController.text.trim());
       
-      if (sys == null || dia == null) return _showError('Blood pressure must be valid whole numbers.');
-      if (sys < 50 || sys > 250) return _showError('Systolic value must be between 50 and 250.');
-      if (dia < 30 || dia > 150) return _showError('Diastolic value must be between 30 and 150.');
-      if (sys <= dia) return _showError('Systolic must be higher than Diastolic.');
+    //   if (sys == null || dia == null) return _showError('Blood pressure must be valid whole numbers.');
+    //   if (sys < 50 || sys > 250) return _showError('Systolic value must be between 50 and 250.');
+    //   if (dia < 30 || dia > 150) return _showError('Diastolic value must be between 30 and 150.');
+    //   if (sys <= dia) return _showError('Systolic must be higher than Diastolic.');
 
-      finalValue = "$sys/$dia";
+    //   finalValue = "$sys/$dia";
 
-    } else {
-      if (_valueController.text.trim().isEmpty) return _showError('Please enter a test value.');
+    // } else {
+    //   if (_valueController.text.trim().isEmpty) return _showError('Please enter a test value.');
 
-      int? val = int.tryParse(_valueController.text.trim());
-      if (val == null) {
-        _showError('Value must be a valid number.');
-        return;
-      } 
+    //   int? val = int.tryParse(_valueController.text.trim());
+    //   if (val == null) {
+    //     _showError('Value must be a valid number.');
+    //     return;
+    //   } 
 
-      if (_selectedType == 'Heart Rate' && (val < 20 || val > 300)) return _showError('Heart rate must be between 20 and 300 bpm.');
-      if (_selectedType == 'Respiratory Rate' && (val < 5 || val > 70)) return _showError('Respiratory rate must be between 5 and 70.');
-      if (_selectedType == 'SPO2' && (val < 30 || val > 100)) return _showError('SPO2 must be between 30% and 100%.');
+    //   if (_selectedType == 'Heart Rate' && (val < 20 || val > 300)) return _showError('Heart rate must be between 20 and 300 bpm.');
+    //   if (_selectedType == 'Respiratory Rate' && (val < 5 || val > 70)) return _showError('Respiratory rate must be between 5 and 70.');
+    //   if (_selectedType == 'SPO2' && (val < 30 || val > 100)) return _showError('SPO2 must be between 30% and 100%.');
 
-      finalValue = val.toString();
-    }
+    //   finalValue = val.toString();
+    // }
     
 
     setState(() => _isSubmitting = true);
@@ -111,8 +121,10 @@ class _AddClinicalRecordScreenState extends State<AddClinicalRecordScreen> {
           ),
         );
       }
-      final bool isCritical = response['flagged'] == true;
+      //final bool isCritical = response['flagged'] == true;
 
+     final String classification = response['classification'] ?? 'Unknown';
+     final bool isCritical = (classification == 'High' || classification == 'Low' || response['flagged'] == true);
      
         if (isCritical && mounted) {
           await showDialog(

@@ -15,63 +15,57 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   bool _isLoading = false;
-
   Future<void> _handleLogin() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
+  final email = _emailController.text.trim();
+  final password = _passwordController.text.trim();
 
-   // 1. Basic Validation
-    if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter both email and password.')),
-      );
-      return;
-    }
+  // 1. Basic Validation
+  if (email.isEmpty || password.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Please enter both email and password.')),
+    );
+    return;
+  }
 
-    // 2. Start Loading Animation
-    setState(() {
-      _isLoading = true;
-    }); 
+  setState(() => _isLoading = true); 
 
-   try {
-      final response = await NetworkManager.instance.loginUser(email, password);
+  try {
+    final response = await NetworkManager.instance.loginUser(email, password);
 
-      if (response['success'] == true) {
-        
-        final dynamicName = response['user']['name'];
+    if (response['success'] == true) {
+      // 1. Extract the name from the response
+      final String dynamicName = response['user']['name'];
 
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('isLoggedIn', true);
-        await prefs.setString('userName', dynamicName); 
-        
-        if (mounted) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const BottomNavigation()),
-          );
-        }
-      } else {
-        
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(response['message'] ?? 'Login failed')),
-          );
-        }
-      }
-    } catch (e) {
-     if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login failed: $e')),
+      // 2. Save info to the phone's memory
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+      await prefs.setString('userName', dynamicName); 
+      
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const BottomNavigation()),
         );
       }
-    } finally {
+    } else {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(response['message'] ?? 'Login failed')),
+        );
       }
     }
-  } 
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Connection Error: Is the server running?')),
+      );
+    }
+  } finally {
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -125,35 +119,34 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 40), 
 
-                SizedBox(
-                  width: double.infinity, 
-                  height: 50, 
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00796B), 
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(25.0), 
-                      ),
-                    ),
-                    // onPressed: () {
-                    //   Navigator.pushReplacement(
-                    //     context,
-                    //     MaterialPageRoute(
-                    //       builder: (context) => const BottomNavigation(),
-                    //     ),
-                    //   );
-                    // },
-                    onPressed: _isLoading ? null : _handleLogin,
-                    child: const Text(
-                      'LOG IN',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
+              SizedBox(
+  width: double.infinity,
+  height: 50,
+  child: ElevatedButton(
+    style: ElevatedButton.styleFrom(
+      backgroundColor: const Color(0xFF00796B),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(25.0),
+      ),
+    ),
+    // You MUST have this line to trigger the login!
+    onPressed: _isLoading ? null : _handleLogin, 
+    child: _isLoading
+        ? const SizedBox(
+            height: 20,
+            width: 20,
+            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+          )
+        : const Text(
+            'LOG IN',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+  ),
+),
               ],
             ),
           ),

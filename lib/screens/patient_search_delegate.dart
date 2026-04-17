@@ -85,7 +85,7 @@ class PatientSearchDelegate extends SearchDelegate {
               'phone': (patient['phone'] ?? 'Unknown').toString(),
               'email': (patient['email'] ?? 'Unknown').toString(),
             };
-            Navigator.pushReplacement(
+            Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => PatientInfoScreen(patientData: patientData)),
             );

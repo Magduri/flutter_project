@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_project/screens/login_screen.dart';
+import 'package:flutter_project/screens/patient_search_delegate.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-//import 'add_patient_screen.dart'; 
 import '../services/network_manager.dart'; 
 import 'patient_info_screen.dart';
 
@@ -14,6 +14,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<dynamic> _criticalPatients = [];
+  List<dynamic> _allPatients = [];
   bool _isLoading = true;
   String _userName = "";
 
@@ -32,20 +33,34 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _fetchDashboardData() async {
-    try {
-      final data = await NetworkManager.instance.getCriticalPatients();
-      if (mounted) {
-        setState(() {
-          _criticalPatients = data;
-          _isLoading = false;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+  try {
+    final allPatients = await NetworkManager.instance.getPatients();
+    if (mounted) {
+      setState(() {
+        _allPatients = allPatients;
+      });
+    }
+  } catch (e) {
+    debugPrint('Error fetching patients: $e');
+  }
+
+  try {
+    final criticalPatients = await NetworkManager.instance.getCriticalPatients();
+    if (mounted) {
+      setState(() {
+        _criticalPatients = criticalPatients;
+        _isLoading = false;
+      });
+    }
+  } catch (e) {
+    debugPrint('Error fetching critical patients: $e');
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -63,21 +78,6 @@ class _HomeScreenState extends State<HomeScreen> {
         automaticallyImplyLeading: false,
         elevation: 0,
         actions: [
-          // // --- 1. ADD PATIENT BUTTON ---
-          // IconButton(
-          //   icon: const Icon(Icons.person_add_alt_1, color: Colors.white, size: 28),
-          //   tooltip: 'Add New Patient',
-          //   onPressed: () {
-          //     Navigator.push(
-          //       context,
-          //       MaterialPageRoute(
-          //         builder: (context) => const AddPatientScreen(),
-          //       ),
-          //     );
-          //   },
-          // ),
-          
-          // --- 2. AVATAR POPUP MENU (Replaces the raw Logout icon) ---
           Padding(
             padding: const EdgeInsets.only(right: 16.0, left: 8.0),
             child: PopupMenuButton<String>(
@@ -89,7 +89,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   final prefs = await SharedPreferences.getInstance();
                   await prefs.clear(); 
 
-                  // 2. Kick the user back to the Login Screen
                   if (context.mounted) {
                     Navigator.pushReplacement(
                       context,
@@ -108,7 +107,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
-                const PopupMenuDivider(), // A nice dividing line
+                const PopupMenuDivider(), 
                 const PopupMenuItem<String>(
                   value: 'logout',
                   child: ListTile(
@@ -118,7 +117,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ],
-              // The Avatar button sitting in the header
+              
               child: CircleAvatar(
                 backgroundColor: Colors.white,
                 radius: 18,
@@ -138,21 +137,33 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              
-              Container(
+              GestureDetector(
+                onTap: () {
+                  showSearch(
+                    context: context,
+                    delegate: PatientSearchDelegate(_allPatients),
+                  );
+                },
+              child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(30), 
                   boxShadow: [
-                    BoxShadow(color: Colors.grey.shade200, blurRadius: 5, spreadRadius: 1)
-                  ]
-                ),
-                child: const TextField(
-                  decoration: InputDecoration(
-                    hintText: 'Search patient by name...',
-                    prefixIcon: Icon(Icons.search, color: Color(0xFF00796B)),
-                    border: InputBorder.none, 
-                    contentPadding: EdgeInsets.symmetric(vertical: 15),
+                      BoxShadow(color: Colors.grey.shade200, blurRadius: 5, spreadRadius: 1)
+                    ]
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                    child: Row(
+                      children: [
+                        Icon(Icons.search, color: Color(0xFF00796B)),
+                        SizedBox(width: 10),
+                        Text(
+                          'Search patient by name...',
+                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
